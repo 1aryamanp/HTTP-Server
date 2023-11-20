@@ -23,21 +23,20 @@ def handle_login(request_headers):
     # Check if username and password are valid
     if validate_user(username, password):
         # Set a cookie called sessionID to a random 64-bit hexadecimal value
-        #session_id = hashlib.sha256(str(random.getrandbits(256)).encode()).hexdigest()
-        session_id = hex(random.getrandbits(64))
+        session_id = hex(random.getrandbits(64))  # Corrected to generate a 64-bit session ID
         # Create a session with required info for validation using the cookie
         create_session(session_id, username)
         # Log with MESSAGE LOGIN SUCCESSFUL: {username} : {password}
-        print(f"LOGIN SUCCESSFUL: {username} : {password}")
-        # Return HTTP 200 OK response with body Logged in!
-        return "200 OK", "Logged in!"
+        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN SUCCESSFUL: {username} : {password}")
+        # Return HTTP 200 OK response with Set-Cookie header and body Logged in!
+        return "200 OK", f"Set-Cookie: sessionID={session_id}\nLogged in!"
     else:
         # Log with MESSAGE LOGIN FAILED: {username} : {password}
-        print(f"LOGIN FAILED: {username} : {password}")
-        # Return HTTP 200 OK response with body Login failed!
-        return "200 OK", "Login failed!"
+        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN FAILED: {username} : {password}")
+        # Return HTTP 401 Unauthorized response with body Login failed!
+        return "401 Unauthorized", "Login Failed"
 
-#Function to handle a GET requests for file downloads:
+#Function to handle GET requests for file downloads:
 def handle_file_download(request_headers, root_directory):
     # Obtain cookies from HTTP request
     cookies = request_headers.get("Cookie")
@@ -60,7 +59,7 @@ def handle_file_download(request_headers, root_directory):
             target = request_headers.get("target")
             # Check if the file exists
             file_path = f"{root_directory}/{username}/{target}"
-            try: #this is IF
+            try: 
                 with open(file_path, "r") as file:
                     file_content = file.read()
                 # Log with MESSAGE GET SUCCEEDED: {username} : {target}
@@ -82,7 +81,7 @@ def handle_file_download(request_headers, root_directory):
         print(f"COOKIE INVALID: {request_headers.get('target')}")
         # Return HTTP status 401 Unauthorized
         return "401 Unauthorized"
-    
+
 # Function to start the server
 def start_server(ip, port, accounts_file, session_timeout, root_directory):
     global SESSION_TIMEOUT
@@ -99,7 +98,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
     server_socket.bind((ip, int(port)))
     # Start listening for incoming connections
     server_socket.listen(1)
-    #-----------------------------------------------------------------------------------------print(f"Server is running on {ip}:{port}")
+    print(f"Server is running on {ip}:{port}")
     while True:
         # Accept an incoming connection
         client_socket, client_address = server_socket.accept()
@@ -120,7 +119,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
             response_status = "501 Not Implemented"
             response_body = ""
         # Close the connection
-        response = f"HTTP/1.1 {response_status}\r\n\r\n{response_body}"
+        response = f"HTTP/1.0 {response_status}\r\n{response_body}"
         client_socket.sendall(response.encode())
         client_socket.close()
         
