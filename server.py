@@ -52,8 +52,8 @@ def handle_file_download(request_headers, root_directory):
         username = session_data.get("username")
         timestamp = session_data.get("timestamp")
         # If timestamp within timeout period
-        print(timestamp, 'ARYAMAN') ############_____________#_#____
-        print(datetime.datetime.now())
+        print(timestamp, 'ARYAMAN') #----------------------------------------------------------------DEBUG
+        print(datetime.datetime.now()) #-------------------------------------------------------------DEBUG
         if timestamp and datetime.datetime.now().timestamp() - timestamp <= SESSION_TIMEOUT:
             # Update sessionID timestamp for the user to the current time
             session_data["timestamp"] = datetime.datetime.now().timestamp()
@@ -104,7 +104,7 @@ def handle_file_download(request_headers, root_directory):
 def start_server(ip, port, accounts_file, session_timeout, root_directory):
     global SESSION_TIMEOUT
     SESSION_TIMEOUT = int(session_timeout)
-    # Load existing sessions from a file if available---------------------------------------------SHOULD THIS BE DONE EARLIER?
+    # Load existing sessions from a file if available---------------------------------------------DO WE NEED THIS
     try:
         with open("sessions.json", "r") as f:
             global sessions
