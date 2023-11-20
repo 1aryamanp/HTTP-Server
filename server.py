@@ -23,7 +23,8 @@ def handle_login(request_headers):
     # Check if username and password are valid
     if validate_user(username, password):
         # Set a cookie called sessionID to a random 64-bit hexadecimal value
-        session_id = hashlib.sha256(str(random.getrandbits(256)).encode()).hexdigest()
+        #session_id = hashlib.sha256(str(random.getrandbits(256)).encode()).hexdigest()
+        session_id = hex(random.getrandbits(64))
         # Create a session with required info for validation using the cookie
         create_session(session_id, username)
         # Log with MESSAGE LOGIN SUCCESSFUL: {username} : {password}
