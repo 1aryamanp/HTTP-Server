@@ -22,37 +22,21 @@ def handle_login(request_headers):
     #If username and password are valid:
     # Check if username and password are valid
     if validate_user(username, password):
-<<<<<<< HEAD
         # Set a cookie called "sessionID" to a random 64-bit hexadecimal value
         session_id = hashlib.sha256(str(random.getrandbits(256)).encode()).hexdigest()
         # Create a session with required info for validation using the cookie
         create_session(session_id, username)
         # Log with MESSAGE "LOGIN SUCCESSFUL: {username} : {password}"
-        print(f"LOGIN SUCCESSFUL: {username} : {password}")
-        # Return HTTP 200 OK response with body "Logged in!"
-        return "200 OK", "Logged in!"
-    else:
-        # Log with MESSAGE "LOGIN FAILED: {username} : {password}
-        print(f"LOGIN FAILED: {username} : {password}")
-        # Return HTTP 200 OK response with body "Login failed!"
-        return "200 OK", "Login failed!"
-=======
-        # Set a cookie called sessionID to a random 64-bit hexadecimal value
-        session_id = hex(random.getrandbits(64))  # Corrected to generate a 64-bit session ID
-        # Create a session with required info for validation using the cookie
-        create_session(session_id, username)
-        # Log with MESSAGE LOGIN SUCCESSFUL: {username} : {password}
         print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN SUCCESSFUL: {username} : {password}")
         # Return HTTP 200 OK response with Set-Cookie header and body Logged in!
         return "200 OK", f"Set-Cookie: sessionID={session_id}\nLogged in!"
     else:
-        # Log with MESSAGE LOGIN FAILED: {username} : {password}
+        # Log with MESSAGE "LOGIN FAILED: {username} : {password}
         print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN FAILED: {username} : {password}")
-        # Return HTTP 401 Unauthorized response with body Login failed!
-        return "401 Unauthorized", "Login Failed"
->>>>>>> 3a6c3e7b0381b6306aaa364c3dfe735fa75c41bd
+        # Return HTTP 200 OK response with body "Login failed!"
+        return "200 OK", "Login failed!"
 
-#Function to handle GET requests for file downloads:
+#Function to handle a GET requests for file downloads:
 def handle_file_download(request_headers, root_directory):
     # Obtain cookies from HTTP request
     cookies = request_headers.get("Cookie")
@@ -68,6 +52,8 @@ def handle_file_download(request_headers, root_directory):
         username = session_data.get("username")
         timestamp = session_data.get("timestamp")
         # If timestamp within timeout period
+        print(timestamp, 'ARYAMAN') ############_____________#_#____
+        print(datetime.datetime.now())
         if timestamp and datetime.datetime.now().timestamp() - timestamp <= SESSION_TIMEOUT:
             # Update sessionID timestamp for the user to the current time
             session_data["timestamp"] = datetime.datetime.now().timestamp()
@@ -75,7 +61,8 @@ def handle_file_download(request_headers, root_directory):
             target = request_headers.get("target")
             # Check if the file exists
             file_path = f"{root_directory}/{username}/{target}"
-            try: 
+            '''
+            try: #this is IF
                 with open(file_path, "r") as file:
                     file_content = file.read()
                 # Log with MESSAGE "GET SUCCEEDED: {username} : {target}"
@@ -83,6 +70,21 @@ def handle_file_download(request_headers, root_directory):
                 # Return HTTP status "200 OK" with body containing the contents of the file
                 return "200 OK", file_content
             except FileNotFoundError:
+                # Log with MESSAGE "GET FAILED: {username} : {target}"
+                print(f"GET FAILED: {username} : {target}")
+                # Return HTTP status "404 NOT FOUND"
+                return "404 NOT FOUND"
+            '''
+            # Check if the file exists using the file_exists function
+            if file_exists(root_directory, username, target):
+                # Read the file content
+                with open(f"{root_directory}/{username}/{target}", "r") as file:
+                    file_content = file.read()
+                # Log with MESSAGE "GET SUCCEEDED: {username} : {target}"
+                print(f"GET SUCCEEDED: {username} : {target}")
+                # Return HTTP status "200 OK" with body containing the contents of the file
+                return "200 OK", file_content
+            else:
                 # Log with MESSAGE "GET FAILED: {username} : {target}"
                 print(f"GET FAILED: {username} : {target}")
                 # Return HTTP status "404 NOT FOUND"
@@ -97,7 +99,7 @@ def handle_file_download(request_headers, root_directory):
         print(f"COOKIE INVALID: {request_headers.get('target')}")
         # Return HTTP status "401 Unauthorized"
         return "401 Unauthorized"
-
+    
 # Function to start the server
 def start_server(ip, port, accounts_file, session_timeout, root_directory):
     global SESSION_TIMEOUT
@@ -114,11 +116,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
     server_socket.bind((ip, int(port)))
     # Start listening for incoming connections
     server_socket.listen(1)
-<<<<<<< HEAD
-    ####################print(f"Server is running on {ip}:{port}")
-=======
     print(f"Server is running on {ip}:{port}")
->>>>>>> 3a6c3e7b0381b6306aaa364c3dfe735fa75c41bd
     while True:
         # Accept an incoming connection
         client_socket, client_address = server_socket.accept()
@@ -178,6 +176,15 @@ def parse_headers(request):
 def save_sessions():
     with open("sessions.json", "w") as f:
         json.dump(sessions, f)
+        
+# Function to check if a file exists and read its content
+def file_exists(root_directory, username, target):
+    file_path = f"{root_directory}/{username}/{target}"
+    try:
+        with open(file_path, "r"):
+            return True
+    except FileNotFoundError:
+        return False
 
 ################ ABOVE FUNCTIONS ARE TO SIMPLIFY THE CODE #################
 
