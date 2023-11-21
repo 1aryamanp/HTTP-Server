@@ -163,5 +163,5 @@ def main():
     #start the server
     start_server(ip, port, accounts_file, int(session_timeout), root_directory)
 
-if _name_ == "_main_":
+if __name__ == "_main_":
     main()
