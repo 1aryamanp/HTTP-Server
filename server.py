@@ -20,16 +20,16 @@ def is_valid(username, password, accounts_file):
 #Function to handle a POST request for user login:
 def handle_post_request(request, session_timeout, accounts_file):
     #Debugging ---------------------------------------------------------------------Remove later
-    print(f'\r\n\r\n{request}')
+    #print(f'\r\n\r\n{request}')
 
     #-------------COULD MERGE THIS PART TO 1 IF-------------------------------------------Check
     # Check if "username" and "password" are present in the request
     if "username" not in request or "password" not in request:
         # If one or both fields are missing, return HTTP status code "501 Not Implemented"
-        return "HTTP/1.1 501 Not Implemented\r\n\r\n"
+        return "HTTP/1.0 501 Not Implemented\r\n\r\n"
     elif request.split()[10] == None or request.split()[12] == None:
         # Additional check for the presence of username and password
-        return "HTTP/1.1 501 Not Implemented\r\n\r\n"
+        return "HTTP/1.0 501 Not Implemented\r\n\r\n"
 
     # Split the request into lines and initialize username and password variables
     x = request.splitlines()
@@ -57,17 +57,17 @@ def handle_post_request(request, session_timeout, accounts_file):
         }
         SESSIONS[session_id] = session
          # Log the successful login and return HTTP status code "200 OK" with a Set-Cookie header
-        print(f"SERVER LOG: {datetime.datetime.now()} LOGIN SUCCESSFUL: {username} : {password}")
-        return (f"HTTP/1.1 200 OK\r\nSet-Cookie: sessionID={session_id}\r\n\r\nLogged in!")
+        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN SUCCESSFUL: {username} : {password}")
+        return (f"HTTP/1.0 200 OK\r\nSet-Cookie: sessionID={session_id}\r\n\r\nLogged in!")
     else:
         # If username and password are not valid, log and return HTTP status code "200 OK" with login failed message
-        print(f"SERVER LOG: {datetime.datetime.now()} LOGIN FAILED: {username} : {password}")
-        return "HTTP/1.1 200 OK\r\n\r\nLogin failed!"
+        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN FAILED")
+        return "HTTP/1.0 200 OK\r\n\r\nLogin failed!"
 
 # Function to handle a GET requests for file downloads:
 def handle_get_request(request, session_timeout, root_directory) -> str:
     #Debugging ----------------------------------------------------------------------------------Remove later
-    print(f'\r\n\r\n{request}')
+    #print(f'\r\n\r\n{request}')
     
     #Split the request into lines
     x = request.splitlines()
@@ -84,14 +84,14 @@ def handle_get_request(request, session_timeout, root_directory) -> str:
     
     #If cookies are missing, return HTTP status code "401 Unauthorized"
     if cookies == None:
-        return "HTTP/1.1 401 Unauthorized\r\n\r\n"
+        return "HTTP/1.0 401 Unauthorized\r\n\r\n"
     #If the "sessionID" cookie exists:
     elif "sessionID" in cookies:
         session_id = cookies.split("=")[1]
         #If session_id is missing or empty, log and return HTTP status code "401 Unauthorized"
         if session_id == None or session_id == "":
-            print(f"SERVER LOG: {datetime.datetime.now()} COOKIE INVALID: {target}")
-            return "HTTP/1.1 401 Unauthorized\r\n\r\n"
+            print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} COOKIE INVALID: {target}")
+            return "HTTP/1.0 401 Unauthorized\r\n\r\n"
         #If session_id is found in SESSIONS:
         if session_id in SESSIONS:
             session = SESSIONS[session_id]
@@ -101,19 +101,19 @@ def handle_get_request(request, session_timeout, root_directory) -> str:
                 session["expiry"] = datetime.datetime.now() + datetime.timedelta(seconds=session_timeout)
                 try:
                     with open(f"{root_directory}{username}{target}", "r") as file:
-                        print(f"SERVER LOG: {datetime.datetime.now()} GET SUCCEEDED: {username} : {target}")
-                        return f"HTTP/1.1 200 OK\r\n\r\n{file.read()}"
+                        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} GET SUCCEEDED: {username} : {target}")
+                        return f"HTTP/1.0 200 OK\r\n\r\n{file.read()}"
                 except FileNotFoundError:
-                    print(f"SERVER LOG: {datetime.datetime.now()} GET FAILED: {username} : {target}")
-                    return "HTTP/1.1 404 NOT FOUND\r\n\r\n"
+                    print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} GET FAILED: {username} : {target}")
+                    return "HTTP/1.0 404 NOT FOUND\r\n\r\n"
             #If the session is expired, log and return HTTP status code "401 Unauthorized"
             else:
-                print(f"SERVER LOG: {datetime.datetime.now()} SESSION EXPIRED: {username} : {target}")
-                return "HTTP/1.1 401 Unauthorized\r\n\r\n"
+                print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} SESSION EXPIRED: {username} : {target}")
+                return "HTTP/1.0 401 Unauthorized\r\n\r\n"
         #If session_id is not found in SESSIONS, log and return HTTP status code "401 Unauthorized"
         else:
-            print(f"SERVER LOG: {datetime.datetime.now()} COOKIE INVALID: {target}")
-            return "HTTP/1.1 401 Unauthorized\r\n\r\n"
+            print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} COOKIE INVALID: {target}")
+            return "HTTP/1.0 401 Unauthorized\r\n\r\n"
 
 #Function to start the server
 def start_server(ip, port, accounts_file, session_timeout, root_directory):
@@ -144,7 +144,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
         #Else: Send HTTP status "501 Not Implemented"
         else:
             print("DID IT COME HERE")
-            connection_socket.send("HTTP/1.1 501 Not Implemented\r\n\r\n".encode())
+            connection_socket.send("HTTP/1.0 501 Not Implemented\r\n\r\n".encode())
         
         #Close connection
         connection_socket.close()
