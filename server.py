@@ -1,3 +1,4 @@
+#Import necessary libraries
 import socket
 import json
 import random
@@ -5,12 +6,15 @@ import datetime
 import hashlib
 import sys
 
+#Global VARIABLE that stores session information
 SESSIONS = {}
 
 #Checks if username and password are valid
 def is_valid(username, password, accounts_file):
+    #Open accounts file and load user account data
     with open(accounts_file, "r") as file:
         accounts = json.load(file)
+        # Check if provided username exists and the hashed password matches
         if username in accounts:
             hashed_password = hashlib.sha256((password + accounts[username][1]).encode()).hexdigest()
             if hashed_password == accounts[username][0]:
@@ -124,7 +128,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
     print(f"Listening for connections on port: {port}")
 
     while True:
-        #Accept incoming connection
+        #Accept incoming connections 
         connection_socket, address = server_socket.accept()
         request = connection_socket.recv(1024).decode()
         request_method = request.split()[0]
@@ -132,6 +136,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
         http_version = request.split()[2]
         
         #If HTTP method is "POST" and request target is "/":
+        print(request_method)
         if request_method == "POST" and request_target == "/":
             #Handle POST request and send response
             response = handle_post_request(request, session_timeout, accounts_file)
@@ -141,15 +146,15 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
             #Handle GET request and send response
             response = handle_get_request(request, session_timeout, root_directory)
             connection_socket.send(response.encode())
-        #Else: Send HTTP status "501 Not Implemented"
+            break
         else:
+            print("DID IT COME HERE")
             connection_socket.send("HTTP/1.1 501 Not Implemented\r\n\r\n".encode())
-        
         #Close connection
         connection_socket.close()
 
 def main():
-    #If the command does not match give a error
+    #If the command does not match give an error
     if len(sys.argv) != 6:
         print("Incorrect Command Should be: python3 server.py [IP] [PORT] [ACCOUNTS_FILE] [SESSION_TIMEOUT] [ROOT_DIRECTORY]")
         sys.exit(1)
@@ -158,5 +163,5 @@ def main():
     #start the server
     start_server(ip, port, accounts_file, int(session_timeout), root_directory)
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
