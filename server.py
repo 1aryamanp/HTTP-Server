@@ -22,14 +22,12 @@ def handle_post_request(request, session_timeout, accounts_file):
     #Debugging ---------------------------------------------------------------------Remove later
     #print(f'\r\n\r\n{request}')
 
-    #-------------COULD MERGE THIS PART TO 1 IF-------------------------------------------Check
-    # Check if "username" and "password" are present in the request
-    if "username" not in request or "password" not in request:
-        # If one or both fields are missing, return HTTP status code "501 Not Implemented"
+   # Check if "username" and "password" are present in the request
+    if "username" not in request or "password" not in request or request.split()[10] is None or request.split()[12] is None:
+        # If one or both fields are missing, or if username/password values are None, return HTTP status code "501 Not Implemented"
+        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN FAILED")
         return "HTTP/1.0 501 Not Implemented\r\n\r\n"
-    elif request.split()[10] == None or request.split()[12] == None:
-        # Additional check for the presence of username and password
-        return "HTTP/1.0 501 Not Implemented\r\n\r\n"
+        
 
     # Split the request into lines and initialize username and password variables
     x = request.splitlines()
@@ -61,7 +59,7 @@ def handle_post_request(request, session_timeout, accounts_file):
         return (f"HTTP/1.0 200 OK\r\nSet-Cookie: sessionID={session_id}\r\n\r\nLogged in!")
     else:
         # If username and password are not valid, log and return HTTP status code "200 OK" with login failed message
-        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN FAILED")
+        print(f"SERVER LOG: {datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')} LOGIN FAILED: {username} : {password}")
         return "HTTP/1.0 200 OK\r\n\r\nLogin failed!"
 
 # Function to handle a GET requests for file downloads:
@@ -143,7 +141,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
             connection_socket.send(response.encode())
         #Else: Send HTTP status "501 Not Implemented"
         else:
-            print("DID IT COME HERE")
+            print("DID IT COME HERE") #---------------------------------------------------------debug 
             connection_socket.send("HTTP/1.0 501 Not Implemented\r\n\r\n".encode())
         
         #Close connection
