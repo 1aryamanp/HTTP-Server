@@ -141,7 +141,7 @@ def start_server(ip, port, accounts_file, session_timeout, root_directory):
             connection_socket.send(response.encode())
         #Else: Send HTTP status "501 Not Implemented"
         else:
-            print("DID IT COME HERE") #---------------------------------------------------------debug 
+            print("DID IT COME HERE")
             connection_socket.send("HTTP/1.0 501 Not Implemented\r\n\r\n".encode())
         
         #Close connection
